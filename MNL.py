@@ -658,6 +658,13 @@ def both_ex_imp_eu(f,x0,xi,xf,h):
         N[i + 1, 1] = coef_imp * N[i, 1]
     return N[:,0],N[:,1]
 
+#Gives the values where zeros exist
+def findZeros(rightbound_vals):
+    return np.where(np.diff(np.signbit(rightbound_vals)))[0]
+#Gives the normalized wavefunction
+def norm_ed(output_wavefunc):
+    normal = max(output_wavefunc)
+    return output_wavefunc*(1/(normal))
 
 #------Newton Raphson method---------#
 def newrap(x,f,max=118):
@@ -681,23 +688,19 @@ def newrap(x,f,max=118):
 def der2(f,a,h=0.0002):
     return ((f(x + h) - 2*f(x) + f(x - h))/(2*h*h))
 #-----------------RK4 method------------#
-def RK4(x, y, h, range, func):
-    X = [];
-    Y = []  # ; Z = []
-    while x <= range:
-        k1 = h * func(x, y)
-        k2 = h * func(x + h / 2, y + k1 / 2)
-        k3 = h * func(x + h / 2, y + k2 / 2)
-        k4 = h * func(x + h, y + k3)
-
-        x = x + h
-        y = y + 1 / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
-
-        X.append(x)
-        Y.append(y)
-    return X, Y
+def rk4(f, psi0, x, V, E):
+    n = len(x)
+    y = np.array([psi0]*n)
+    for i in range(n-1):
+        h = x[i+1]-x[i]
+        k1 = h*f(y[i], x[i], V[i], E)
+        k2 = h*f(y[i]+0.5*k1, x[i]+0.5*h, V[i], E)
+        k3 = h*f(y[i]+0.5*k2, x[i]+0.5*h, V[i], E)
+        k4 = h*f(y[i]+k3, x[i+1], V[i], E)
+        y[i+1] = y[i]+(k1+2.0*(k2+k3)+k4)/6.0
+    return y
 #-------Runge-kutta 4 integrator--2nd type-----#
-def rk42o(f, x_0, y_0, z_0, x_max, h):
+def rk4_2nd(f, x_0, y_0, z_0, x_max, h):
     x = x_0
     y = y_0
     z = z_0
